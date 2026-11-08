@@ -66,6 +66,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.lifecycle:lifecycle-runtime:2.11.0")
     implementation("androidx.tv:tv-material:1.1.0")
 
     implementation("androidx.media3:media3-exoplayer:$media3")
