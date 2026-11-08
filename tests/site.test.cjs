@@ -2,7 +2,7 @@
 // Real-browser suite for app/src/main/assets/site.js (see browser.cjs for what this proves).
 // Fixtures are minimal stand-ins for the site's cookie bar, cookie settings and sign-in dialog, with
 // the selectors site.js relies on.
-// Run: node --test tests/
+// Run: node --test tests/site.test.cjs
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { setup } = require("./browser.cjs");

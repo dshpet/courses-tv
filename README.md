@@ -65,7 +65,7 @@ release app that sends no changes to the account.
 
 ```sh
 ./gradlew testDebugUnitTest
-node --test tests/     # Node 22+, headless Chromium (/usr/bin/chromium or CHROMIUM=)
+node --test tests/site.test.cjs     # Node 22+, headless Chromium (/usr/bin/chromium or CHROMIUM=)
 ```
 
 Manual TV checks: [tests/EMULATOR_CHECKS.md](tests/EMULATOR_CHECKS.md).
