@@ -1,0 +1,33 @@
+# Local toolchain and caches
+.tools/
+
+# Gradle and build outputs
+.gradle/
+build/
+.kotlin/
+
+# Local machine configuration
+local.properties
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Signing keys
+*.jks
+*.keystore
+*.p12
+*.pem
+*.pk8
+*.key
+
+# App packages
+*.apk
+*.aab
+*.apks
+*.xapk
+*.apkm
+
+# Local credentials for sign-in tests
+.env

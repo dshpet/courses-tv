@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "id": "1",
+      "webuser_id": "0",
+      "course_id": "1001",
+      "lecture_id": "ZV1001-L02",
+      "progress": 600,
+      "lecture_index": 2,
+      "lecture_name": "An Allocation Game",
+      "lecture_description": "<p>An invented lecture &amp; its main idea.</p>",
+      "updated_at": "2026-11-01 10:00:00",
+      "lecture_image_filename": "1001-L02.jpg",
+      "time_in_seconds": 1800,
+      "course_url_key": "markets-and-lighthouses",
+      "course_name": "Markets and Lighthouses"
+    },
+    {
+      "id": "2",
+      "webuser_id": "0",
+      "course_id": "1002",
+      "lecture_id": "ZV1002-L01",
+      "progress": 2340,
+      "lecture_index": 1,
+      "lecture_name": "First Principles",
+      "lecture_description": "",
+      "updated_at": "2026-10-01 10:00:00",
+      "lecture_image_filename": "1002-L01.jpg",
+      "time_in_seconds": 2349,
+      "course_url_key": "a-guide-to-bridges",
+      "course_name": "A Guide to Bridges"
+    }
+  ],
+  "total_count": 2
+}

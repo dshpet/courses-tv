@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "item_id": 11,
+      "sequence": 1,
+      "product_id": 5001,
+      "course_id": 1001,
+      "product_sku": "1001",
+      "course_name": "Markets and Lighthouses",
+      "course_description": "<p>An invented course about markets &amp; how they shape everyday life.</p>",
+      "course_image_filename": "1001.jpg",
+      "lecture_image_filename": "",
+      "lecture_name": "",
+      "lecture_description": "",
+      "format": "course"
+    },
+    {
+      "item_id": 12,
+      "sequence": 2,
+      "product_id": 5019,
+      "course_id": 1010,
+      "product_sku": "ZV1010-L02",
+      "course_name": "Famous Debates",
+      "course_description": "",
+      "course_image_filename": "1010.jpg",
+      "lecture_image_filename": "1010-L02.jpg",
+      "lecture_name": "The Debate at the Harbor",
+      "lecture_description": "<p>An invented lecture &amp; its main idea.</p>",
+      "format": "lecture"
+    }
+  ],
+  "total_count": 2
+}

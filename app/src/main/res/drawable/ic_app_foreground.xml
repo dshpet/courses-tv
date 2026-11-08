@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App icon mark: a gold classical portico inside the adaptive icon's 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M31.87,45.43L54,33.48L76.13,45.43ZM33.2,46.98L74.8,46.98L74.8,50.07L33.2,50.07ZM49.57,54.94L49.57,66.45L59.53,60.7ZM34.53,51.4L40.28,51.4L40.28,53.17L34.53,53.17ZM35.63,53.17L39.17,53.17L39.17,68.22L35.63,68.22ZM41.83,51.4L47.58,51.4L47.58,53.17L41.83,53.17ZM42.94,53.17L46.48,53.17L46.48,68.22L42.94,68.22ZM60.42,51.4L66.17,51.4L66.17,53.17L60.42,53.17ZM61.52,53.17L65.06,53.17L65.06,68.22L61.52,68.22ZM67.72,51.4L73.47,51.4L73.47,53.17L67.72,53.17ZM68.83,53.17L72.37,53.17L72.37,68.22L68.83,68.22ZM33.2,69.55L74.8,69.55L74.8,71.98L33.2,71.98ZM30.54,73.09L77.46,73.09L77.46,75.52L30.54,75.52Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="33.48" android:endX="0" android:endY="75.52">
+                <item android:offset="0.0" android:color="#F4D07A" />
+                <item android:offset="1.0" android:color="#C8923A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
