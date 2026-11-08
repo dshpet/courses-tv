@@ -68,7 +68,7 @@ class ProfessorActivity : TvActivity() {
             is Load.Ready -> {
                 val first = remember { FocusRequester() }
                 LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 40.dp, bottom = 60.dp), verticalArrangement = Arrangement.spacedBy(48.dp)) {
-                    itemsIndexed(pages.value, key = { _, page -> page.first.name }) { index, (professor, courses) ->
+                    itemsIndexed(pages.value) { index, (professor, courses) ->
                         Section(professor, courses, if (index == 0) first else null)
                     }
                 }

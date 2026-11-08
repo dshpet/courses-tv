@@ -3,39 +3,19 @@ package io.github.dshpet.coursestv
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.accessibility.CaptioningManager
 import androidx.annotation.OptIn
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,29 +27,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -92,9 +60,6 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
 import androidx.media3.ui.compose.ContentFrame
 import androidx.media3.ui.compose.state.rememberProgressStateWithTickInterval
-import androidx.tv.material3.Icon
-import androidx.tv.material3.Text
-import coil3.compose.AsyncImage
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -340,11 +305,6 @@ class PlayerActivity : TvActivity() {
     /** Where the remote's keys go. */
     private enum class Zone { Bar, Buttons, Panel }
 
-    private class Button(val label: String, val icon: ImageVector, val action: () -> Unit)
-
-    /** A settings panel line: a section's title, or a choice in it. */
-    private class Line(val label: String, val selected: Boolean = false, val choose: (() -> Unit)? = null)
-
     @Composable
     private fun Playback(course: Course) {
         val state = remember { PlayState(player) }
@@ -353,7 +313,7 @@ class PlayerActivity : TvActivity() {
             onDispose { player.removeListener(state) }
         }
         val times = rememberProgressStateWithTickInterval(player, tickIntervalMs = 500)
-        val time = Times(times.currentPositionMs, times.bufferedPositionMs, times.durationMs.takeIf { it != C.TIME_UNSET } ?: 0L)
+        val time = PlaybackTime(times.currentPositionMs, times.bufferedPositionMs, times.durationMs.takeIf { it != C.TIME_UNSET } ?: 0L)
         var controls by remember { mutableStateOf(true) }
         var zone by remember { mutableStateOf(Zone.Bar) }
         var button by remember { mutableIntStateOf(0) }
@@ -373,26 +333,26 @@ class PlayerActivity : TvActivity() {
         // A height this lecture lacks plays as the highest one under it, or its lowest.
         val chosen = if (quality == 0) 0 else state.heights.firstOrNull { it <= quality } ?: state.heights.lastOrNull() ?: quality
         val lines = buildList {
-            add(Line("Quality"))
-            add(Line(if (quality == 0 && state.height > 0) "Auto (${state.height}p)" else "Auto", quality == 0) { quality = 0; setQuality(0) })
-            state.heights.forEach { height -> add(Line("${height}p", chosen == height) { quality = height; setQuality(height) }) }
-            add(Line("Speed"))
-            SPEEDS.forEach { value -> add(Line(if (value == 1f) "Normal" else "${speedLabel(value)}×", speed == value) { speed = value; setSpeed(value) }) }
+            add(SettingsLine("Quality"))
+            add(SettingsLine(if (quality == 0 && state.height > 0) "Auto (${state.height}p)" else "Auto", quality == 0) { quality = 0; setQuality(0) })
+            state.heights.forEach { height -> add(SettingsLine("${height}p", chosen == height) { quality = height; setQuality(height) }) }
+            add(SettingsLine("Speed"))
+            SPEEDS.forEach { value -> add(SettingsLine(if (value == 1f) "Normal" else "${speedLabel(value)}×", speed == value) { speed = value; setSpeed(value) }) }
             if (captions) {
-                add(Line("Caption size"))
-                CAPTION_SIZES.forEach { (label, value) -> add(Line(label, captionSize == value) { captionSize = value; settings.captionSize = value }) }
+                add(SettingsLine("Caption size"))
+                CAPTION_SIZES.forEach { (label, value) -> add(SettingsLine(label, captionSize == value) { captionSize = value; settings.captionSize = value }) }
             }
         }
         val choices = lines.filter { it.choose != null }
 
         val buttons = buildList {
-            add(Button("Lectures", Icons.list) { openLectures(course) })
-            add(Button(if (captions) "Captions on" else "Captions off", Icons.captions) { captions = !captions; setCaptions(captions) })
-            add(Button("Settings", Icons.settings) {
+            add(PlayerButton("Lectures", Icons.list) { openLectures(course) })
+            add(PlayerButton(if (captions) "Captions on" else "Captions off", Icons.captions) { captions = !captions; setCaptions(captions) })
+            add(PlayerButton("Settings", Icons.settings) {
                 zone = Zone.Panel
                 line = choices.indexOfFirst { it.selected }.coerceAtLeast(0)
             })
-            if (next != null) add(Button("Next lecture", Icons.next) { progress?.save(); player.seekToNextMediaItem() })
+            if (next != null) add(PlayerButton("Next lecture", Icons.next) { progress?.save(); player.seekToNextMediaItem() })
         }
         val selected = button.coerceAtMost(buttons.lastIndex)
 
@@ -468,11 +428,11 @@ class PlayerActivity : TvActivity() {
         Box(Modifier.fillMaxSize().focusRequester(focus).focusable().onKeyEvent(::onKey)) {
             ContentFrame(player, Modifier.fillMaxSize())
             // Beside the settings panel while it is open, so a new size can be seen.
-            val panel = if (controls && zone == Zone.Panel) PANEL_WIDTH else 0.dp
-            Captions(state.cues, captionSize, lifted = controls, modifier = Modifier.align(Alignment.BottomCenter).padding(end = panel))
+            val panel = if (controls && zone == Zone.Panel) SETTINGS_WIDTH else 0.dp
+            Captions(state.cues, captionLook, captionSize, lifted = controls, modifier = Modifier.align(Alignment.BottomCenter).padding(end = panel))
             if (state.buffering && state.error == null) Spinner(Modifier.align(Alignment.Center))
             AnimatedVisibility(controls, enter = fadeIn(tween(150)), exit = fadeOut(tween(400))) {
-                Controls(course, current, state.playWhenReady, time, speed, zone, buttons, selected)
+                PlayerControls(course, current, state.playWhenReady, time, speed, onBar = zone == Zone.Bar, buttons, selected)
             }
             AnimatedVisibility(controls && zone == Zone.Panel, Modifier.align(Alignment.CenterEnd), enter = fadeIn(tween(150)), exit = fadeOut(tween(150))) {
                 SettingsPanel(lines, choices.getOrNull(line))
@@ -508,159 +468,6 @@ class PlayerActivity : TvActivity() {
                 }
             }
         }
-    }
-
-    @Composable
-    private fun Controls(course: Course, lecture: Lecture?, playWhenReady: Boolean, time: Times, speed: Float, zone: Zone, buttons: List<Button>, selected: Int) {
-        Box(Modifier.fillMaxSize()) {
-            Column(
-                Modifier.fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color(0xE6000000), Color(0x99000000), Color.Transparent)))
-                    .padding(start = Dimens.screenH, end = Dimens.screenH, top = 30.dp, bottom = 50.dp),
-            ) {
-                Text(course.title, style = Type.label, color = Palette.dim, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (lecture != null) {
-                    Text(
-                        lecture.numberedTitle,
-                        style = Type.display,
-                        fontSize = 26.sp,
-                        lineHeight = 32.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-            }
-            Column(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xB3000000), Color(0xF2000000))))
-                    .padding(start = Dimens.screenH, end = Dimens.screenH, top = 60.dp, bottom = 34.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(if (playWhenReady) Icons.pause else Icons.play, contentDescription = null, tint = Palette.text, modifier = Modifier.size(30.dp))
-                    Text(clock(time.position), style = Type.label, fontSize = 15.sp, modifier = Modifier.padding(start = 14.dp, end = 14.dp))
-                    SeekBar(time, active = zone == Zone.Bar, modifier = Modifier.weight(1f))
-                    Text(
-                        listOfNotNull(
-                            if (time.duration > 0) "−" + clock(time.duration - time.position) else "−–:––",
-                            if (speed != 1f) "${speedLabel(speed)}×" else null,
-                        ).joinToString("   "),
-                        style = Type.label,
-                        fontSize = 15.sp,
-                        color = Palette.dim,
-                        modifier = Modifier.padding(start = 14.dp),
-                    )
-                }
-                Row(Modifier.padding(top = 18.dp, start = 44.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    buttons.forEachIndexed { index, button ->
-                        val on = zone != Zone.Bar && index == selected
-                        Row(
-                            Modifier.clip(RoundedCornerShape(50))
-                                .background(if (on) Palette.focus else Color.Transparent)
-                                .border(1.5.dp, if (on) Palette.focus else Palette.text.copy(alpha = 0.6f), RoundedCornerShape(50))
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(button.icon, contentDescription = null, tint = if (on) Palette.onFocus else Palette.text, modifier = Modifier.size(20.dp))
-                            Text(button.label, style = Type.label, fontSize = 15.sp, color = if (on) Palette.onFocus else Palette.text, modifier = Modifier.padding(start = 8.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SettingsPanel(lines: List<Line>, at: Line?) {
-        Column(Modifier.fillMaxHeight().width(PANEL_WIDTH).background(Palette.panel).verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 36.dp)) {
-            lines.forEach { line ->
-                if (line.choose == null) {
-                    Text(line.label, style = Type.heading, fontSize = 18.sp, modifier = Modifier.padding(start = 12.dp, top = 14.dp, bottom = 6.dp))
-                } else {
-                    val on = line === at
-                    // Keeps the choice in view with a line around it, so a section's title shows above its first.
-                    val view = remember { BringIntoViewRequester() }
-                    val margin = with(LocalDensity.current) { 48.dp.toPx() }
-                    LaunchedEffect(on) { if (on) view.bringIntoView(Rect(0f, -margin, 1f, margin * 1.5f)) }
-                    Row(
-                        Modifier.fillMaxWidth().bringIntoViewRequester(view).clip(RoundedCornerShape(6.dp)).background(if (on) Palette.focus else Color.Transparent).padding(horizontal = 12.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Box(Modifier.size(22.dp)) {
-                            if (line.selected) Icon(Icons.check, contentDescription = null, tint = if (on) Palette.onFocus else Palette.accent, modifier = Modifier.size(20.dp))
-                        }
-                        Text(line.label, style = Type.label, color = if (on) Palette.onFocus else Palette.text, modifier = Modifier.padding(start = 10.dp))
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun SeekBar(time: Times, active: Boolean, modifier: Modifier) {
-        Box(modifier.height(20.dp), contentAlignment = Alignment.CenterStart) {
-            Box(Modifier.fillMaxWidth().height(4.dp).background(Color(0x40FFFFFF)))
-            Box(Modifier.fillMaxWidth(time.fraction(time.buffered)).height(4.dp).background(Color(0x66FFFFFF)))
-            Box(Modifier.fillMaxWidth(time.fraction(time.position)).height(4.dp).background(Palette.accent))
-            Box(Modifier.fillMaxWidth(time.fraction(time.position)), contentAlignment = Alignment.CenterEnd) {
-                Box(Modifier.offset(x = 7.dp).size(if (active) 16.dp else 10.dp).background(if (active) Palette.text else Palette.accent, CircleShape))
-            }
-        }
-    }
-
-    /** In the TV's caption style (Settings → Accessibility → Captions), at its text size times [size]. */
-    @Composable
-    private fun Captions(cues: List<String>, size: Float, lifted: Boolean, modifier: Modifier) {
-        if (cues.isEmpty()) return
-        val look = captionLook
-        val scale = look.scale * size
-        Column(modifier.padding(bottom = if (lifted) 170.dp else 48.dp, start = 100.dp, end = 100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            cues.forEach { cue ->
-                Text(
-                    cue,
-                    style = Type.body.copy(shadow = look.shadow),
-                    color = look.color,
-                    fontSize = 22.sp * scale,
-                    lineHeight = 30.sp * scale,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.background(look.background, RoundedCornerShape(4.dp)).padding(horizontal = 10.dp, vertical = 2.dp),
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun UpNext(next: Lecture, seconds: Int) {
-        Row(
-            Modifier.padding(end = Dimens.screenH, bottom = 40.dp).width(440.dp)
-                .background(Palette.panel, RoundedCornerShape(8.dp)).padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            AsyncImage(next.image, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(128.dp, 72.dp).clip(RoundedCornerShape(4.dp)))
-            Column(Modifier.padding(start = 14.dp)) {
-                Text("Next lecture in $seconds s", style = Type.small, color = Palette.dim)
-                Text(next.numberedTitle, style = Type.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text("Select to play now", style = Type.small, color = Palette.dim)
-            }
-        }
-    }
-
-    @Composable
-    private fun Spinner(modifier: Modifier = Modifier) {
-        val angle by rememberInfiniteTransition(label = "spinner").animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing)),
-            label = "angle",
-        )
-        Canvas(modifier.size(56.dp)) {
-            drawArc(Palette.text, startAngle = angle, sweepAngle = 270f, useCenter = false, style = Stroke(width = 4.dp.toPx()))
-        }
-    }
-
-    /** Milliseconds; the duration is 0 until known. */
-    private data class Times(val position: Long, val buffered: Long, val duration: Long) {
-        fun fraction(millis: Long): Float = if (duration > 0) (millis.toFloat() / duration).coerceIn(0f, 1f) else 0f
     }
 
     private class PlayState(player: Player) : Player.Listener {
@@ -705,7 +512,6 @@ class PlayerActivity : TvActivity() {
         private const val HIDE_AFTER_MILLIS = 5_000L
         private const val UP_NEXT_MILLIS = 20_000L
         private const val ASK_AFTER = 3
-        private val PANEL_WIDTH = 300.dp
         private val SPEEDS = listOf(0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
         private val CAPTION_SIZES = listOf("Small" to 0.8f, "Normal" to 1f, "Large" to 1.3f, "Extra large" to 1.6f)
 
@@ -717,16 +523,6 @@ class PlayerActivity : TvActivity() {
                 .putExtra(EXTRA_FROM_START, fromStart)
 
         fun reached(result: Intent?): Int? = result?.getIntExtra(EXTRA_LECTURE, 0)?.takeIf { it > 0 }
-
-        private fun clock(millis: Long): String {
-            val total = (millis.coerceAtLeast(0) / 1000).toInt()
-            val h = total / 3600
-            val m = total / 60 % 60
-            val s = total % 60
-            return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
-        }
-
-        private fun speedLabel(speed: Float) = if (speed == speed.toInt().toFloat()) speed.toInt().toString() else speed.toString()
 
         /** Only [height] (0: any). */
         private fun TrackSelectionParameters.Builder.withQuality(height: Int): TrackSelectionParameters.Builder =
@@ -753,22 +549,4 @@ private class PlayerSettings(context: Context, private val captionsByDefault: Bo
     var speed: Float
         get() = prefs.getFloat("speed", 1f)
         set(value) = prefs.edit { putFloat("speed", value) }
-}
-
-/** The TV's caption settings, read when the player opens. */
-private class CaptionLook(context: Context) {
-    private val manager = context.getSystemService(CaptioningManager::class.java)
-    private val style = manager?.userStyle
-
-    val enabled = manager?.isEnabled == true
-    val scale = manager?.fontScale ?: 1f
-    val color = style?.takeIf { it.hasForegroundColor() }?.let { Color(it.foregroundColor) } ?: Color.White
-    val background = style?.takeIf { it.hasBackgroundColor() }?.let { Color(it.backgroundColor) } ?: Color(0xB3000000)
-
-    // Outline, raised and depressed edges are drawn as a soft shadow; drop shadow, offset.
-    val shadow: Shadow? = style?.takeIf { it.hasEdgeType() && it.edgeType != CaptioningManager.CaptionStyle.EDGE_TYPE_NONE }?.let {
-        val edge = if (it.hasEdgeColor()) Color(it.edgeColor) else Color.Black
-        val drop = it.edgeType == CaptioningManager.CaptionStyle.EDGE_TYPE_DROP_SHADOW
-        Shadow(edge, if (drop) Offset(3f, 3f) else Offset.Zero, blurRadius = if (drop) 3f else 6f)
-    }
 }

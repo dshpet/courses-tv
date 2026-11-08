@@ -1,5 +1,7 @@
 # Courses TV
 
+[![CI](https://github.com/dshpet/courses-tv/actions/workflows/ci.yml/badge.svg)](https://github.com/dshpet/courses-tv/actions/workflows/ci.yml)
+
 An unofficial Android TV app for a [The Great Courses Plus](https://plus.thegreatcourses.com/)
 subscription, made for the Chromecast with Google TV. Runs on Google TV and Android TV, Android 14+.
 

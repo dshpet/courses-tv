@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "io.github.dshpet.coursestv"
         minSdk = 34
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 17
         versionName = "0.17"
         buildConfigField("boolean", "WRITES", "true")

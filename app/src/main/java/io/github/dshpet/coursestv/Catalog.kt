@@ -49,6 +49,10 @@ class Catalog(private val api: Api, private val scope: CoroutineScope, private v
     // The last progress save. Progress reads wait for it, so no screen shows a stale position.
     @Volatile private var saving: Job? = null
 
+    init {
+        scope.launch(Dispatchers.IO) { stash.trim(KEPT_ANSWERS) }
+    }
+
     /** The service's row order, with Continue Watching, Recently Watched and My List filled in. */
     suspend fun home(source: Source = Source.Fresh): List<Row> = work {
         val order = async { read("order", "${Hosts.API}/rest/V1/traysorder/plus/home", source) { it } }
@@ -313,6 +317,7 @@ class Catalog(private val api: Api, private val scope: CoroutineScope, private v
         const val CACHE_MILLIS = 30 * 60 * 1000L
         const val PERSONAL_MILLIS = 10_000L
         const val KEPT_MILLIS = 5_000L
+        const val KEPT_ANSWERS = 300
         const val PROGRESS = "progress"
         const val MY_LIST = "mylist"
         const val AT_ONCE = 6
@@ -367,6 +372,13 @@ class Stash(private val dir: File) {
         synchronized(this) {
             generation++
             dir.deleteRecursively()
+        }
+    }
+
+    /** Keeps the [keep] answers written last. */
+    fun trim(keep: Int) {
+        synchronized(this) {
+            dir.listFiles().orEmpty().sortedByDescending { it.lastModified() }.drop(keep).forEach { it.delete() }
         }
     }
 
