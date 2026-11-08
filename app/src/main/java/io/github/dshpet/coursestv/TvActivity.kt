@@ -61,9 +61,9 @@ abstract class TvActivity : ComponentActivity() {
         super.onResume()
         launching = false
         // Back from signing in: rebuild, so everything is read with the new session.
-        if (signingIn && catalog.isSignedIn) {
+        if (signingIn) {
             signingIn = false
-            return recreate()
+            if (catalog.isSignedIn) return recreate()
         }
         if (started) resumes++ else started = true
     }

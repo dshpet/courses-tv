@@ -114,6 +114,8 @@ class PlayerActivity : TvActivity() {
         lifecycleScope.launch {
             while (isActive) {
                 delay(1000)
+                // The player may have been released while waiting.
+                if (released) break
                 progress?.tick()
             }
         }
@@ -124,7 +126,8 @@ class PlayerActivity : TvActivity() {
         super.onSaveInstanceState(outState)
         progress?.let {
             outState.putInt(STATE_LECTURE, it.lecture.number)
-            outState.putInt(STATE_SECONDS, (player.currentPosition / 1000).toInt())
+            // After release the player is gone; its final position was saved already.
+            if (!released) outState.putInt(STATE_SECONDS, (player.currentPosition / 1000).toInt())
         }
     }
 

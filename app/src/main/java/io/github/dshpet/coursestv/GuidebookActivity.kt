@@ -131,11 +131,12 @@ class GuidebookActivity : TvActivity() {
         }
     }
 
-    /** The PDF, from the TV's cache if it was opened lately. */
+    /** The PDF, from the TV's cache if it was fetched lately. */
     private suspend fun download(courseId: Int, url: String, progress: (Int) -> Unit): File = withContext(Dispatchers.IO) {
         val dir = cacheDir.resolve("guidebooks").apply { mkdirs() }
         val file = dir.resolve("$courseId.pdf")
-        if (file.length() > 0) return@withContext file.also { it.setLastModified(System.currentTimeMillis()) }
+        // lastModified is the fetch time, so a cached file expires; it is not touched on reads.
+        if (file.length() > 0 && System.currentTimeMillis() - file.lastModified() < FRESH_MILLIS) return@withContext file
         val part = dir.resolve("$courseId.part")
         try {
             app.http.newCall(Request.Builder().url(url).build()).execute().use { response ->
@@ -169,6 +170,7 @@ class GuidebookActivity : TvActivity() {
         private const val EXTRA_TITLE = "title"
         private const val EXTRA_URL = "url"
         private const val KEPT = 5
+        private const val FRESH_MILLIS = 30L * 24 * 60 * 60 * 1000 // 30 days
         private val PAGE_START = 240.dp
         private val PAGE_WIDTH = 680.dp
         private val LARGE_WIDTH = 900.dp
