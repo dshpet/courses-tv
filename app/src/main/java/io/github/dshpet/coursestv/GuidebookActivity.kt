@@ -100,7 +100,7 @@ class GuidebookActivity : TvActivity() {
         }
 
         fun onKey(event: KeyEvent): Boolean {
-            val handled = event.key in KEYS
+            val handled = event.key in REMOTE_KEYS
             if (event.type != KeyEventType.KeyDown || !handled) return handled
             val first = event.nativeKeyEvent.repeatCount == 0
             val step = scroll.viewportSize * 0.6f
@@ -172,10 +172,6 @@ class GuidebookActivity : TvActivity() {
         private val PAGE_START = 240.dp
         private val PAGE_WIDTH = 680.dp
         private val LARGE_WIDTH = 900.dp
-        private val KEYS = setOf(
-            Key.DirectionCenter, Key.Enter, Key.NumPadEnter,
-            Key.DirectionLeft, Key.DirectionRight, Key.DirectionUp, Key.DirectionDown,
-        )
 
         fun intent(context: Context, course: Course): Intent = Intent(context, GuidebookActivity::class.java)
             .putExtra(EXTRA_COURSE, course.id)

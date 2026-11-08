@@ -37,9 +37,8 @@ import androidx.core.view.isVisible
 import java.io.ByteArrayInputStream
 
 /**
- * The website with its own sign-in dialog opened, made usable with the remote by `site.js`. The app
- * never sees the credentials: the site's cookies, its API token among them, stay in the WebView's
- * store. Closes once the site reports the customer signed in and the token is stored.
+ * The website with its sign-in dialog opened, usable with the remote through `site.js`. Credentials
+ * and cookies stay in the WebView. Closes once the site reports the customer signed in.
  */
 class SignInActivity : Activity() {
 
@@ -234,9 +233,8 @@ class SignInActivity : Activity() {
 }
 
 /**
- * `site.js` in the page, and the loop that opens the site's sign-in dialog whenever the page shows
- * its Sign In button, until the user closes the dialog. It checks every half second and pauses
- * after 10 s without a button, until the next page or resume.
+ * Installs `site.js` and opens the sign-in dialog whenever the page shows its Sign In button, until
+ * the user closes it. Checks every 0.5 s; pauses after 10 s without a button until the next page or resume.
  */
 private class SitePage(private val webView: WebView, private val canPrompt: () -> Boolean) {
 

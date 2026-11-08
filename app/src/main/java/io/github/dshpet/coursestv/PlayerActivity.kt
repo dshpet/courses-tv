@@ -398,7 +398,7 @@ class PlayerActivity : TvActivity() {
 
         fun onKey(event: KeyEvent): Boolean {
             if (state.error != null || asking) return false // the card's buttons take the keys
-            val handled = event.key in KEYS
+            val handled = event.key in REMOTE_KEYS
             if (event.type != KeyEventType.KeyDown || !handled) return handled
             val repeat = event.nativeKeyEvent.repeatCount
             inputs++
@@ -708,10 +708,6 @@ class PlayerActivity : TvActivity() {
         private val PANEL_WIDTH = 300.dp
         private val SPEEDS = listOf(0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
         private val CAPTION_SIZES = listOf("Small" to 0.8f, "Normal" to 1f, "Large" to 1.3f, "Extra large" to 1.6f)
-        private val KEYS = setOf(
-            Key.DirectionCenter, Key.Enter, Key.NumPadEnter,
-            Key.DirectionLeft, Key.DirectionRight, Key.DirectionUp, Key.DirectionDown,
-        )
 
         /** [lecture] 0 plays the course's next lecture. */
         fun intent(context: Context, courseId: Int, lecture: Int, fromStart: Boolean = false): Intent =

@@ -95,6 +95,8 @@ data class Lecture(
 
 fun hoursLabel(hours: Double): String = "%.1f hours".format(Locale.ENGLISH, hours)
 
+fun lecturesLabel(count: Int): String = if (count == 1) "1 lecture" else "$count lectures"
+
 /** "11.1 of 18.2 hours watched"; under an hour, in minutes. */
 fun watchedLabel(seconds: Int, hours: Double): String {
     val watched = if (seconds < 3600) "${seconds / 60} min" else "%.1f".format(Locale.ENGLISH, (seconds / 3600.0).coerceAtMost(hours))
@@ -104,7 +106,7 @@ fun watchedLabel(seconds: Int, hours: Double): String {
 /** "Teacher · 24 lectures · 12.7 hours", leaving out what isn't known. */
 fun facts(professor: String, lectures: Int, hours: Double): String = listOfNotNull(
     professor.ifEmpty { null },
-    lectures.takeIf { it > 0 }?.let { if (it == 1) "1 lecture" else "$it lectures" },
+    lectures.takeIf { it > 0 }?.let(::lecturesLabel),
     hours.takeIf { it > 0 }?.let(::hoursLabel),
 ).joinToString(" · ")
 

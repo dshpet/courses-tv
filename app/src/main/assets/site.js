@@ -35,7 +35,7 @@
     }, 0);
   };
 
-  // ---- Cookie banner (Amasty GDPR): the bar, or a settings dialog opened on top of it ----------
+  // Cookie banner (Amasty GDPR): the bar, or a settings dialog opened on top of it
 
   const zIndex = (element) => Number(getComputedStyle(element).zIndex) || 0;
   const consentLayer = () =>
@@ -84,7 +84,7 @@
     ${CONSENT_TOGGLE}:focus { outline: 3px solid #007c99; outline-offset: 3px; }`;
   (document.head || document.documentElement).append(focusStyle);
 
-  // ---- Sign-in dialog ----------------------------------------------------------------------------
+  // Sign-in dialog
 
   const signInDialog = () => {
     const dialog = document.querySelector('#collapseSign[role="dialog"]');
@@ -132,7 +132,7 @@
     return "opening";
   };
 
-  // ---- Back and status for the host ---------------------------------------------------------------
+  // Back and status for the host
 
   // Closes the open sign-in dialog, like its own Close button.
   const back = () => {

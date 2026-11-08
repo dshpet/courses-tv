@@ -35,9 +35,9 @@ enum class Source { Kept, Fresh, Exact }
 class NotKeptException : IOException("not kept")
 
 /**
- * Everything the screens show, from the service's JSON API. The catalog is
- * cached for 30 min and personal data for 10 s, each loaded once for concurrent callers; answers are
- * also kept on the TV ([Stash]) for the [Source] reads. JSON is mapped off the main thread.
+ * Everything the screens show, from the service's JSON API. The catalog is cached for 30 min and
+ * personal data for 10 s, each loaded once for concurrent callers; answers are also kept on the TV
+ * ([Stash]) for the [Source] reads. JSON is mapped off the main thread.
  */
 class Catalog(private val api: Api, private val scope: CoroutineScope, private val counts: SharedPreferences, private val stash: Stash) {
 
@@ -46,7 +46,7 @@ class Catalog(private val api: Api, private val scope: CoroutineScope, private v
     // Key → (expiry, load).
     private val cache = HashMap<String, Pair<Long, Deferred<Any>>>()
 
-    // The last progress save; progress reads wait for it, so no screen shows a stale position.
+    // The last progress save. Progress reads wait for it, so no screen shows a stale position.
     @Volatile private var saving: Job? = null
 
     /** The service's row order, with Continue Watching, Recently Watched and My List filled in. */
@@ -251,7 +251,6 @@ class Catalog(private val api: Api, private val scope: CoroutineScope, private v
     private suspend fun customer(): JSONObject =
         JSONObject(api.get("${Hosts.SITE}/customer/section/load/?sections=customer")).optJSONObject("customer") ?: JSONObject()
 
-    // Progress reads wait for the last save, so no screen shows a stale position.
     private suspend fun <T : Any> progress(key: String, query: String, source: Source, parse: (JSONObject) -> T): T =
         read("$PROGRESS/$key", "${Hosts.API}/rest/V1/lectureprogress/mine?$query", source, PERSONAL_MILLIS, waitForSave = true, parse)
 

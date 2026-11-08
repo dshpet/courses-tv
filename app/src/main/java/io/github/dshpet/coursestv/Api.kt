@@ -37,10 +37,7 @@ suspend fun <T> attempt(block: suspend () -> T): Result<T> = try {
     Result.failure(e)
 }
 
-/**
- * The service's JSON API, called as the website calls it: the site's `global_auth_token` cookie is
- * the Bearer token. The app keeps no token of its own; signing out clears the WebView's cookies.
- */
+/** The service's JSON API, called as the website calls it: the site's `global_auth_token` cookie is the Bearer token. */
 class Api(client: OkHttpClient) {
 
     private val http = client.newBuilder().cookieJar(WebViewCookies).build()

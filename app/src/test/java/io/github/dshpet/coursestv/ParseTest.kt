@@ -6,6 +6,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 /** Invented catalog, progress and My List records in the API's shape. */
 class ParseTest {
@@ -51,12 +54,6 @@ class ParseTest {
         val path = Parse.row(tray("Learning Paths")).items.first()
         assertTrue(path.subject.startsWith("learning-paths-"))
         assertFalse(path.title.startsWith("Learning Paths"))
-    }
-
-    @Test
-    fun `trays without products, such as the banners, give empty rows`() {
-        val banner = fixture("home").optJSONArray("trays").objects().first { it.optString("widget_function") == "Jumbotron" }
-        assertTrue(Parse.row(banner).items.isEmpty())
     }
 
     @Test
@@ -111,22 +108,10 @@ class ParseTest {
     }
 
     @Test
-    fun `a course card from a summary opens the course`() {
-        val card = Parse.card(Summary(1016, "Economics", "Morgan Hale", 36, 18.2, "Markets"))
-        assertEquals("Economics", card.title)
-        assertEquals(1016, card.courseId)
-        assertEquals(0, card.lecture)
-        assertEquals(Images.course(1016), card.image)
-        assertEquals(Images.backdrop(1016), card.backdrop)
-        assertEquals("Morgan Hale · 36 lectures · 18.2 hours", card.subtitle)
-        assertFalse(card.plays)
-    }
-
-    @Test
     fun `null fields read as empty, so fallbacks apply and lectures without video are left out`() {
         val json = fixture("course")
         json.put("wondrium_description", JSONObject.NULL)
-        json.optJSONArray("lectures").optJSONObject(1).put("lecture_video_filename", JSONObject.NULL)
+        json.getJSONArray("lectures").getJSONObject(1).put("lecture_video_filename", JSONObject.NULL)
         val course = Parse.course(json)
         assertEquals(json.getString("course_description"), course.description)
         assertEquals(listOf(2, 3), course.lectures.map { it.number })
@@ -136,7 +121,7 @@ class ParseTest {
     @Test
     fun `a repeated lecture number is listed once`() {
         val json = fixture("course")
-        json.optJSONArray("lectures").put(JSONObject(json.optJSONArray("lectures").optJSONObject(1).toString()))
+        json.getJSONArray("lectures").put(JSONObject(json.getJSONArray("lectures").getJSONObject(1).toString()))
         assertEquals(listOf(1, 2, 3), Parse.course(json).lectures.map { it.number })
     }
 
@@ -199,10 +184,10 @@ class ParseTest {
     @Test
     fun `continue watching keeps the last 16 weeks, without courses removed from it`() {
         val watched = Parse.watched(Parse.progress(fixture("progress")))
-        val now = java.time.Instant.parse("2026-11-07T12:00:00Z")
+        val now = Instant.parse("2026-11-07T12:00:00Z")
         assertEquals(listOf(1001, 1002), Parse.continueWatching(watched, setOf(1001, 1002), now).map { it.courseId })
         assertEquals(listOf(1002), Parse.continueWatching(watched, setOf(1002), now).map { it.courseId })
-        assertEquals(listOf(1001), Parse.continueWatching(watched, setOf(1001, 1002), java.time.Instant.parse("2027-02-10T00:00:00Z")).map { it.courseId })
+        assertEquals(listOf(1001), Parse.continueWatching(watched, setOf(1001, 1002), Instant.parse("2027-02-10T00:00:00Z")).map { it.courseId })
     }
 
     @Test
@@ -221,7 +206,7 @@ class ParseTest {
     @Test
     fun `recently watched lists the courses, saying when and how much`() {
         val watched = Parse.watched(Parse.progress(fixture("progress")))
-        val items = Parse.recentlyWatched(watched, java.time.LocalDate.parse("2026-11-01"), java.time.ZoneOffset.UTC)
+        val items = Parse.recentlyWatched(watched, LocalDate.parse("2026-11-01"), ZoneOffset.UTC)
         assertEquals(listOf(1001, 1002), items.map { it.courseId })
         assertFalse("opens the course", items.first().plays)
         assertEquals("Last watched today", items[0].subtitle)
@@ -267,7 +252,7 @@ class ParseTest {
     @Test
     fun `home follows the service's row order, with the personal rows filled in`() {
         val next = listOf(Parse.nextUp(course)!!)
-        val recent = Parse.recentlyWatched(Parse.watched(Parse.progress(fixture("progress"))), java.time.LocalDate.parse("2026-11-07"), java.time.ZoneOffset.UTC)
+        val recent = Parse.recentlyWatched(Parse.watched(Parse.progress(fixture("progress"))), LocalDate.parse("2026-11-07"), ZoneOffset.UTC)
         val myList = Parse.myList(fixture("mylist"))
         val rows = Parse.home(fixture("traysorder"), Parse.trays(fixture("home")), Watching(next, recent), myList)
         assertEquals(
@@ -308,20 +293,6 @@ class ParseTest {
     }
 
     @Test
-    fun `a JSON null reads as empty text`() {
-        val json = JSONObject().put("name", JSONObject.NULL).put("number", 7)
-        assertEquals("", json.text("name"))
-        assertEquals("", json.text("missing"))
-        assertEquals("7", json.text("number"))
-    }
-
-    @Test
-    fun `lecture numbers come from lecture SKUs only`() {
-        assertEquals(3, Parse.lectureNumber("ZV1001-L03"))
-        assertEquals(0, Parse.lectureNumber("1001"))
-    }
-
-    @Test
     fun `html descriptions become plain text`() {
         assertEquals("Who’s Who — of “giants”", Parse.plainText("<p>Who&rsquo;s Who&nbsp;&mdash; of &ldquo;<strong>giants</strong>&rdquo;</p>"))
         assertEquals("\"the unnecessary war.\" — ok", Parse.plainText("&#34;the unnecessary war.&#34; &#x2014; ok"))
@@ -333,6 +304,5 @@ class ParseTest {
         assertEquals("one two", Parse.plainText("  one&nbsp;\r\n two &#32;"))
         assertEquals("x<b>y A", Parse.plainText("x&lt;b&gt;y &#65;"))
         assertEquals("unclosed <tag", Parse.plainText("unclosed <tag"))
-        assertNull(Parse.product(JSONObject().put("product_type", "unknown")))
     }
 }

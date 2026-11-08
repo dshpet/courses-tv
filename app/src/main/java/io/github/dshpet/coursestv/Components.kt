@@ -52,6 +52,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +86,12 @@ val LocalResumes = compositionLocalOf { 0 }
 
 /** How much of each course has been watched, by course id; see [TvActivity.show]. */
 val LocalMarks = compositionLocalOf { emptyMap<Int, Mark>() }
+
+/** The D-pad and Select keys, for screens that handle the remote themselves. */
+val REMOTE_KEYS = setOf(
+    Key.DirectionCenter, Key.Enter, Key.NumPadEnter,
+    Key.DirectionLeft, Key.DirectionRight, Key.DirectionUp, Key.DirectionDown,
+)
 
 /**
  * Runs [block] whenever [keys] change. The last result stays on screen while it reloads and if a
@@ -252,8 +259,8 @@ fun ItemRow(row: Row, onFocus: (Item) -> Unit, onClick: (Item) -> Unit, firstCar
 }
 
 /**
- * Where a reloaded list stays: on the focused card, or it loses the focus; at its start if it was
- * there (keyed lists otherwise follow their first card, hiding a newer one put in front).
+ * Where a reloaded list stays: at its start if it was there (keyed lists otherwise follow their first
+ * card, hiding a newer one put in front), else on the focused card, so it keeps the focus.
  */
 private fun keepPlace(items: List<Item>, focusedKey: String?, atStart: Boolean, first: Int, offset: Int, scrollTo: (Int) -> Unit): Int {
     val index = items.indexOfFirst { it.key == focusedKey }

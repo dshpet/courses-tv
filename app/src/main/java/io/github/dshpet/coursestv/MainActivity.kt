@@ -112,8 +112,8 @@ class MainActivity : TvActivity() {
                         Tab.Search -> SearchTab()
                         Tab.Subjects -> SubjectsTab()
                         Tab.MyList -> MyListTab(hero, onFocus)
-                        // Rebuilt rather than recomposed in place, which left the Sign in button's focus
-                        // undrawn; Home, so the next session doesn't open on the saved Account tab.
+                        // Recreated: recomposing left the Sign in button's focus undrawn. Home, so the
+                        // next session doesn't open on Account.
                         Tab.Account -> AccountTab(onSignOut = { signOut { tab = Tab.Home; recreate() } })
                     }
                 }
@@ -372,7 +372,7 @@ class MainActivity : TvActivity() {
                 Spacer(Modifier.height(32.dp))
                 TvButton("Sign out", onClick = onSignOut)
                 Text(
-                    "Courses TV ${packageManager.getPackageInfo(packageName, 0).versionName} · unofficial, not affiliated with The Teaching Company",
+                    "Courses TV ${BuildConfig.VERSION_NAME} · unofficial, not affiliated with The Teaching Company",
                     style = Type.small,
                     color = Palette.faint,
                     modifier = Modifier.padding(top = 40.dp),

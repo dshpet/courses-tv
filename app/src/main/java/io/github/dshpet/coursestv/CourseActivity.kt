@@ -251,13 +251,12 @@ class CourseActivity : TvActivity() {
 
         val all = finished == course.lectures.size
         val watched = course.watchedSeconds
-        // The buttons may be wider than the text.
         Column(modifier.padding(start = Dimens.screenH, top = 56.dp, bottom = 18.dp)) {
             if (course.professor.isNotEmpty()) Text(course.professor, style = Type.label, color = Palette.dim)
             Text(course.title, style = Type.display, fontSize = 34.sp, lineHeight = 40.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp).width(600.dp))
             Text(
                 listOfNotNull(
-                    "${course.lectures.size} lectures",
+                    lecturesLabel(course.lectures.size),
                     course.hours.takeIf { it > 0 }?.let { if (watched > 0 && !all) watchedLabel(watched, it) else hoursLabel(it) },
                     finished.takeIf { it > 0 }?.let { if (all) "All finished" else "$it finished" },
                 ).joinToString("  ·  "),
