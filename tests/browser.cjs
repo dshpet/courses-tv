@@ -145,10 +145,15 @@ function setup({ pages, assets }) {
   }
 
   test.before(start);
-  test.after(() => {
+  test.after(async () => {
     cdp?.close();
-    browser?.kill();
-    if (userDataDir) fs.rmSync(userDataDir, { recursive: true, force: true });
+    // Chromium writes its profile until it exits.
+    if (browser?.exitCode === null) {
+      const exited = new Promise((resolve) => browser.once("exit", resolve));
+      browser.kill();
+      await exited;
+    }
+    if (userDataDir) fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3 });
   });
 
   return {
