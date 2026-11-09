@@ -80,7 +80,7 @@ function setup({ pages, assets }) {
       "--disable-features=BackForwardCache",
       // D-pad keys move focus spatially, as in the TV WebView.
       "--enable-spatial-navigation", "about:blank",
-    ], { stdio: ["ignore", "ignore", "pipe"] });
+    ], { stdio: ["ignore", "ignore", "pipe"], detached: true });
     const wsUrl = await new Promise((resolve, reject) => {
       let stderr = "";
       const timer = setTimeout(() => reject(new Error(`Chromium did not start:\n${stderr}`)), 15000);
@@ -147,13 +147,19 @@ function setup({ pages, assets }) {
   test.before(start);
   test.after(async () => {
     cdp?.close();
-    // Chromium's children can write its profile after the main process exits.
-    if (browser?.exitCode === null && browser.signalCode === null) {
-      const exited = new Promise((resolve) => browser.once("exit", resolve));
-      browser.kill();
+    if (browser) {
+      const exited = browser.exitCode === null && browser.signalCode === null ? new Promise((resolve) => {
+        const timer = setTimeout(resolve, 3000);
+        browser.once("exit", () => { clearTimeout(timer); resolve(); });
+      }) : null;
+      // Chromium's children can outlive its main process; detached gave them their own group.
+      try { process.kill(-browser.pid, "SIGKILL"); } catch {}
       await exited;
     }
-    if (userDataDir) fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+    if (userDataDir) {
+      try { fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); }
+      catch (e) { console.warn(`Could not remove test profile ${userDataDir}: ${e.code}`); }
+    }
   });
 
   return {
