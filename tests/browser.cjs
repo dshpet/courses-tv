@@ -147,13 +147,13 @@ function setup({ pages, assets }) {
   test.before(start);
   test.after(async () => {
     cdp?.close();
-    // Chromium writes its profile until it exits.
-    if (browser?.exitCode === null) {
+    // Chromium's children can write its profile after the main process exits.
+    if (browser?.exitCode === null && browser.signalCode === null) {
       const exited = new Promise((resolve) => browser.once("exit", resolve));
       browser.kill();
       await exited;
     }
-    if (userDataDir) fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3 });
+    if (userDataDir) fs.rmSync(userDataDir, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
   });
 
   return {
